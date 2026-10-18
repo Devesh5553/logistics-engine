@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 from sqlalchemy import inspect
@@ -104,8 +105,8 @@ def main():
 
     # serve
     p_serve = subparsers.add_parser("serve", help="Run the FastAPI API server")
-    p_serve.add_argument("--host", default="127.0.0.1", help="Host address (default: 127.0.0.1)")
-    p_serve.add_argument("--port", type=int, default=8000, help="Port (default: 8000)")
+    p_serve.add_argument("--host", default=os.getenv("HOST", "0.0.0.0"), help="Host address (default: 0.0.0.0)")
+    p_serve.add_argument("--port", type=int, default=int(os.getenv("PORT", "8000")), help="Port (default: 8000)")
     p_serve.add_argument("--reload", action="store_true", help="Enable auto-reload")
 
     args = parser.parse_args()

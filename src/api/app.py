@@ -4,8 +4,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from fastapi import FastAPI, Depends, Query, HTTPException, status, Path, Body, Header
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from src.db import SessionLocal
@@ -42,6 +42,14 @@ app = FastAPI(
         "who may do what on which customs brokerage job."
     ),
     version="3.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
