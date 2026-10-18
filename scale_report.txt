@@ -1,0 +1,48 @@
+========================================================================
+NFPL ACCESS CONTROL SERVICE - SCALE BENCHMARK REPORT
+========================================================================
+
+1. ENVIRONMENT & MACHINE SPECS
+  Operating System:   Windows-11-10.0.26200-SP0
+  Processor / CPU:    Intel64 Family 6 Model 154 Stepping 3, GenuineIntel
+  Python Version:     3.13.1
+  SQLite Version:     3.45.3
+  Scale Database:     C:\Users\Devesh\AppData\Local\Temp\pytest-of-Devesh\pytest-44\test_scale_query_benchmark_and0\test_scale.db
+  Isolation Note:     Runs in dedicated database; sample dataset is NEVER overwritten.
+
+2. DATASET COUNTS & LOAD PERFORMANCE
+  Users:              100
+  Grants:             100
+  Jobs:               10,000 across 5 branches & 25 clients
+  Load Time:          0.19 seconds
+  Load Throughput:    52,170 rows/second
+  Total Script Time:  0.69 seconds
+
+3. QUERY LATENCY BENCHMARKS (100 Iterations per query)
+------------------------------------------------------------------------
+Query Scenario                   | Average    | p95        | Worst-Case | Status
+------------------------------------------------------------------------
+Narrow Scope Match (Q1)          |   0.15 ms  |   0.40 ms  |   0.71 ms   | PASS (<50ms)
+Branch Queue Aggregation (Q2)    |   0.21 ms  |   0.41 ms  |   0.49 ms   | PASS (<50ms)
+Wildcard Scope Queue (Q3)        |   0.21 ms  |   0.50 ms  |   0.54 ms   | PASS (<50ms)
+Live Uncached Grant Lookup       |  0.100 ms  |  0.322 ms  |  0.393 ms   | PASS (<10ms)
+------------------------------------------------------------------------
+
+4. EXPLAIN QUERY PLAN VERIFICATION
+  [A] Narrow Scope Match Query:
+      Index Used: ix_jobs_scope_stage (client_id, branch_id, direction, mode, stage)
+      Plan: (4, 0, 0, 'SEARCH jobs USING INDEX ix_jobs_scope_stage (client_id=? AND branch_id=? AND direction=? AND mode=? AND stage=?)')
+
+  [B] Branch Queue Aggregation Query:
+      Index Used: ix_jobs_branch_stage (branch_id, stage)
+      Plan: (6, 0, 0, 'SEARCH jobs USING COVERING INDEX ix_jobs_branch_stage (branch_id=? AND stage=?)')
+
+  [C] Wildcard Scope Queue Query:
+      Index Used: ix_jobs_stage (stage)
+      Plan: (4, 0, 0, 'SEARCH jobs USING INDEX ix_jobs_stage (stage=?)')
+
+  [D] Live Uncached Grant Lookup Query:
+      Index Used: ix_grants_user_validity (user_id, valid_to, revoked_at, valid_from)
+      Plan: (3, 0, 0, 'SEARCH grants USING INDEX ix_grants_user_validity (user_id=?)')
+
+========================================================================
